@@ -2,141 +2,108 @@ import random
 import unittest
 
 VERSION = 0.01
- 
-class Card:
-    '''a standard playing card
-    cards will have a suit and a rank
-    Class Attributes
-    ----------------
-    suit_names: list
-        the four suit names in order 
-        0:Diamonds, 1:Clubs, 2: Hearts, 3: Spades
-    
-    faces: dict
-        maps face cards' rank name
-        1:Ace, 11:Jack, 12:Queen,  13:King
-    Instance Attributes
-    -------------------
-    suit: int
-        the numerical index into the suit_names list
-    suit_name: string
-        the name of the card's suit
-    rank: int
-        the numerical rank of the card
-    rank_name: string
-        the name of the card's rank (e.g., "King" or "3")
-    '''
-    suit_names = ["Diamonds","Clubs","Hearts","Spades"]
-    faces = {1:"Ace",11:"Jack",12:"Queen",13:"King"}
- 
 
-    def __init__(self, suit=0,rank=2):
-        self.suit = suit
-        self.suit_name = Card.suit_names[self.suit]
 
-        self.rank = rank
-        if self.rank in Card.faces:
-            self.rank_name = Card.faces[self.rank]
-        else:
-            self.rank_name = str(self.rank)
- 
-    def __str__(self):
-        return f"{self.rank_name} of {self.suit_name}"
- 
+class Card(object):
+	suit_names =  ["Diamonds","Clubs","Hearts","Spades"]
+	rank_levels = [1,2,3,4,5,6,7,8,9,10,11,12,13]
+	faces = {1:"Ace",11:"Jack",12:"Queen",13:"King"}
 
-class Deck:
-    '''a deck of Cards
-    Instance Attributes
-    -------------------
-    cards: list
-        the list of Cards currently in the Deck. Initialized to contain
-        all 52 cards in a standard deck
-    '''
+	def __init__(self, suit=0,rank=2):
+		self.suit = self.suit_names[suit]
+		if rank in self.faces: # self.rank handles printed representation
+			self.rank = self.faces[rank]
+		else:
+			self.rank = rank
+		self.rank_num = rank # To handle winning comparison
 
-    def __init__(self): 
+	def __str__(self):
+		return "{} of {}".format(self.rank,self.suit)
 
-        self.cards = []
-        for suit in range(4):
-            for rank in range(1,14):
-                card = Card(suit,rank)
-                self.cards.append(card) # appends in a sorted order
- 
-    def deal_card(self, i=-1):
-        '''remove a card from the Deck
-        Parameters  
-        -------------------
-        i: int (optional)
-            the index of the ard to remove. Default (-1) will remove the "top" card
-        Returns
-        -------
-        Card
-            the Card that was removed
-        '''
-        return self.cards.pop(i) 
- 
-    def shuffle(self):
-        '''shuffles (randomizes the order) of the Cards
-        self.cards is modified in place
-        Parameters  
-        ----------
-        None
-        Returns
-        -------
-        None
-        '''
-        random.shuffle(self.cards)
- 
-    def sort_cards(self):
-        '''returns the Deck to its original order
-        
-        Cards will be in the same order as when Deck was constructed.
-        self.cards is modified in place.
-        Parameters  
-        ----------
-        None
-        Returns
-        -------
-        None
-        '''
-        self.cards = []
-        for suit in range(4):
-            for rank in range(1,14):
-                card = Card(suit,rank)
-                self.cards.append(card)
- 
-    def deal_hand(self, hand_size):
-        '''removes and returns hand_size cards from the Deck
-        
-        self.cards is modified in place. Deck size will be reduced
-        by hand_size
-        Parameters  
-        -------------------
-        hand_size: int
-            the number of cards to deal
-        Returns
-        -------
-        list
-            the top hand_size cards from the Deck
-        '''
-        hand_cards = []
-        for i in range(hand_size):
-            hand_cards.append(self.deal_card())
-        return hand_cards
+class Deck(object):
+	def __init__(self): # Don't need any input to create a deck of cards
+		# This working depends on Card class existing above
+		self.cards = []
+		for suit in range(4):
+			for rank in range(1,14):
+				card = Card(suit,rank)
+				self.cards.append(card) # appends in a sorted order
 
-def print_hand(hand):
-    '''prints a hand in a compact form
-    
-    Parameters  
-    -------------------
-    hand: list
-        list of Cards to print
-    Returns
-    -------
-    none
-    '''
-    hand_str = '/ '
-    for c in hand:
-        s = c.suit_name[0]
-        r = c.rank_name[0]
-        hand_str += r + "of" + s + ' / '
-    print(hand_str)
+	def __str__(self):
+		total = []
+		for card in self.cards:
+			total.append(card.__str__())
+		# shows up in whatever order the cards are in
+		return "\n".join(total) # returns a multi-line string listing each card
+
+	def pop_card(self, i=-1):
+		# removes and returns a card from the Deck
+		# default is the last card in the Deck
+		return self.cards.pop(i) # this card is no longer in the deck -- taken off
+
+	def shuffle(self):
+		random.shuffle(self.cards)
+
+	def replace_card(self, card):
+		card_strs = [] # forming an empty list
+		for c in self.cards: # each card in self.cards (the initial list)
+			card_strs.append(c.__str__()) # appends the string that represents that card to the empty list
+		if card.__str__() not in card_strs: # if the string representing this card is not in the list already
+			self.cards.append(card) # append it to the list
+
+	def sort_cards(self):
+		# Basically, remake the deck in a sorted way
+		# This is assuming you cannot have more than the normal 52 cars in a deck
+		self.cards = []
+		for suit in range(4):
+			for rank in range(1,14):
+				card = Card(suit,rank)
+				self.cards.append(card)
+
+
+def play_war_game(testing=False):
+	# Call this with testing = True and it won't print out all the game stuff -- makes it hard to see test results
+	player1 = Deck()
+	player2 = Deck()
+
+	p1_score = 0
+	p2_score = 0
+
+	player1.shuffle()
+	player2.shuffle()
+	if not testing:
+		print("\n*** BEGIN THE GAME ***\n")
+	for i in range(52):
+		p1_card = player1.pop_card()
+		p2_card = player2.pop_card()
+		print('p1 rank_num=', p1_card.rank_num, 'p1 rank_num=', p2_card.rank_num)
+		if not testing:
+			print("Player 1 plays", p1_card,"& Player 2 plays", p2_card)
+
+		if p1_card.rank_num > p2_card.rank_num:
+
+			if not testing:
+				print("Player 1 wins a point!")
+			p1_score += 1
+		elif p1_card.rank_num < p2_card.rank_num:
+			if not testing:
+				print("Player 2 wins a point!")
+			p2_score += 1
+		else:
+			if not testing:
+				print("Tie. Next turn.")
+
+	if p1_score > p2_score:
+		return "Player1", p1_score, p2_score
+	elif p2_score > p1_score:
+		return "Player2", p1_score, p2_score
+	else:
+		return "Tie", p1_score, p2_score
+
+if __name__ == "__main__":
+	result = play_war_game()
+	print("""\n\n******\nTOTAL SCORES:\nPlayer 1: {}\nPlayer 2: {}\n\n""".format(result[1],result[2]))
+	if result[0] != "Tie":
+		print(result[0], "wins")
+	else:
+		print("TIE!")
