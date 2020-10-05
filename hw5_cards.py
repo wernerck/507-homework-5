@@ -2,7 +2,7 @@ import random
 import unittest
 
 VERSION = 0.01
-print("A") 
+#################updated 10/4/2020
 class Card:
     '''a standard playing card
     cards will have a suit and a rank
