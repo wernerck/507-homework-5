@@ -1,3 +1,8 @@
+# Christian Werner
+# wernerck
+# SI 507 - 003
+# Worked with: N/A
+
 import random
 import unittest
 
